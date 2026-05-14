@@ -24,4 +24,4 @@ Built for developers using:
 ## Installation
 
 ```bash
-pip install mpesa-tz
+pip install mpesa-tz==0.1.0

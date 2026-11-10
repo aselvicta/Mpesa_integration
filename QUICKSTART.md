@@ -2,7 +2,7 @@
 
 Get from zero to your first M-Pesa Tanzania payment request in about 10 minutes.
 
-> Full reference: [README.md](README.md) · Validating the package: [TESTING.md](TESTING.md)
+> Overview: [README.md](README.md) · API reference: [Reference](#reference) below · Validating the package: [TESTING.md](TESTING.md)
 
 ---
 
@@ -185,6 +185,98 @@ in a background worker (Celery, RQ) or a thread.
 3. Run `mpesa-tz session`, then send one small real payment to your own phone.
 
 In production, only real Tanzanian mobile numbers (`06…`/`07…`) are accepted.
+
+---
+
+## Reference
+
+### What a call returns
+
+Each operation returns an `MpesaResponse` with these fields:
+
+| Field | Meaning |
+|---|---|
+| `.is_success` | `True` when M-Pesa returned `INS-0` |
+| `.code` / `.description` | M-Pesa response code and its message |
+| `.transaction_id` | M-Pesa transaction ID |
+| `.conversation_id` | M-Pesa conversation ID |
+| `.third_party_conversation_id` | Your own ID for the request (generated if you don't pass one) |
+| `.raw` | The full JSON M-Pesa sent back |
+| `.to_dict()` | All of the above as a dictionary |
+
+### Errors
+
+| Exception | When |
+|---|---|
+| `MpesaValidationError` | Bad phone, amount or reference (nothing is sent) |
+| `MpesaConfigError` | Missing API key, public key or shortcode, or an unknown environment |
+| `MpesaConnectionError` | Timeout, DNS or TLS problems |
+| `MpesaAuthError` | Invalid API key or not authorised (`INS-2`, `INS-26`) |
+| `MpesaAPIError` | Any other `INS-*` error: see `exc.code`, `exc.description`, `exc.response` |
+
+All of them inherit from `MpesaError`. Pass `raise_on_error=False` to the client to get an
+unsuccessful `MpesaResponse` back instead of an exception for API errors.
+`mpesa_tz.describe("INS-2006")` returns the message for any code.
+
+### Client options
+
+```python
+from mpesa_tz import MpesaClient
+
+client = MpesaClient(
+    api_key="...",
+    public_key="...",
+    service_provider_code="000000",
+    environment="sandbox",         # or "production"
+    timeout=60,                    # seconds to wait for M-Pesa
+    session_ttl=3000,              # seconds to reuse a session key
+    session_activation_delay=30,   # sandbox: wait for new session keys to activate
+    strict_phone=None,             # default: real TZ numbers only in production, relaxed in sandbox
+    raise_on_error=True,
+)
+```
+
+`MpesaClient.from_env(...)` reads the same settings from `MPESA_*` variables, and any
+argument you pass to it overrides the environment.
+
+### Async callbacks
+
+If your M-Pesa account sends results to a callback URL, handle them like this in any framework:
+
+```python
+from mpesa_tz import parse_callback, callback_ack
+
+result = parse_callback(request_body)      # dict, str or bytes
+if result.is_success:
+    mark_order_paid(result.third_party_conversation_id, result.transaction_id)
+return callback_ack(result)                # the JSON reply M-Pesa expects
+```
+
+The Django app already includes this view at `POST /mpesa/callback/`.
+
+### Command line
+
+```bash
+mpesa-tz session                                                     # check credentials
+mpesa-tz stk-push --phone 0754123456 --amount 1000 --reference ORDER1
+mpesa-tz b2c --phone 0754123456 --amount 500 --reference PAY1
+mpesa-tz query --reference TX123ABC
+mpesa-tz reverse --transaction-id TX123ABC --amount 1000
+```
+
+`python -m mpesa_tz ...` works too. Output is JSON, and the exit code is non-zero on failure.
+
+### Upgrading from 0.1.0
+
+`client.stk.push(phone=..., amount=..., reference=...)` still works, but the client now
+needs the real credentials:
+
+```python
+# 0.1.0
+MpesaClient(api_key=..., base_url=...)
+# 0.2.0
+MpesaClient(api_key=..., public_key=..., service_provider_code=..., environment="sandbox")
+```
 
 ---
 

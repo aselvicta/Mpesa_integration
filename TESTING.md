@@ -273,7 +273,7 @@ ngrok http 8000      # use the https URL + /mpesa/callback/ in the portal config
 - [ ] Django `makemigrations --check` reports no changes
 - [ ] Version bumped in **both** `pyproject.toml` and `mpesa_tz/__init__.py`; `CHANGELOG.md` updated
 - [ ] `.env` is not committed (`git status` is clean of secrets)
-- [ ] Tested on TestPyPI, then `twine upload dist/*`
+- [ ] Push a version tag (`git tag v<version> && git push origin v<version>`). The `publish` workflow tests, builds and uploads to PyPI through Trusted Publishing.
 - [ ] `pip install mpesa-tz==<version>` from PyPI in a clean venv works
 
 ---

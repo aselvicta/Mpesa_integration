@@ -1,0 +1,59 @@
+name: publish
+
+# Publishes to PyPI when a version tag is pushed, e.g.:
+#   git tag v0.2.0 && git push origin v0.2.0
+# Authentication uses PyPI Trusted Publishing (no API token needed).
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: pytest
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check tag matches package version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG=$(grep -m1 '^version' pyproject.toml | cut -d'"' -f2)
+          INIT=$(grep -m1 '__version__' mpesa_tz/__init__.py | cut -d'"' -f2)
+          echo "tag=$TAG pyproject=$PKG __init__=$INIT"
+          if [ "$TAG" != "$PKG" ] || [ "$TAG" != "$INIT" ]; then
+            echo "::error::Tag v$TAG does not match the version in pyproject.toml ($PKG) / __init__.py ($INIT)"
+            exit 1
+          fi
+      - run: pip install build twine
+      - run: python -m build
+      - run: twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # required for PyPI Trusted Publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

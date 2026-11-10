@@ -43,6 +43,8 @@ Copy `.env.example` to `.env` and fill it in.
 
 ## Quick start
 
+New here? Follow the step-by-step guide in **[QUICKSTART.md](QUICKSTART.md)**: install, sandbox credentials, first payment, Django/Flask setup and going live.
+
 ```python
 from mpesa_tz import MpesaClient, MpesaAPIError, MpesaError
 
@@ -176,9 +178,10 @@ MpesaClient(api_key=..., base_url=...)
 MpesaClient(api_key=..., public_key=..., service_provider_code=..., environment="sandbox")
 ```
 
-## Testing
+## Documentation
 
-See [TESTING.md](TESTING.md).
+- [QUICKSTART.md](QUICKSTART.md): step-by-step setup and first payment
+- [TESTING.md](TESTING.md): running the tests and validating the package
 
 ## License
 

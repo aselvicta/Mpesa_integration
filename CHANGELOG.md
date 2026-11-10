@@ -15,4 +15,5 @@ First working release. 0.1.0 on PyPI was not importable
 - Optional Django app `mpesa_tz.contrib.django` (Payment model, admin, callback view, services).
 - CLI: `python -m mpesa_tz` / `mpesa-tz`.
 - `client.stk.push(phone, amount, reference)` from 0.1.x still works.
+- Requires Python 3.10+ (3.8 and 3.9 are end-of-life).
 - Breaking: `MpesaClient(api_key, base_url)` now also needs `public_key` and `service_provider_code`.

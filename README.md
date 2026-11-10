@@ -25,7 +25,7 @@ pip install "mpesa-tz[dotenv]"    # + .env file support
 pip install "mpesa-tz[django]"    # + Django integration
 ```
 
-Requires Python 3.8+.
+Requires Python 3.10+.
 
 ## Credentials
 

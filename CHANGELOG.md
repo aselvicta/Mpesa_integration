@@ -1,19 +1,38 @@
 # Changelog
 
-## 0.2.0
+## Version 0.2.0
 
-First working release. 0.1.0 on PyPI was not importable
-(`from mpesa_tz import MpesaClient` failed, `stk.push` called a missing
-`get_headers`, and `models.py` required Django and crashed on import).
+The first fully working version of the package.
 
-- Real Vodacom Tanzania M-Pesa OpenAPI integration (RSA-encrypted API key -> session key -> encrypted session bearer).
-- `MpesaClient` with `stk_push`/`c2b_payment`, `b2c_payment`, `b2b_payment`, `query_transaction_status`, `reversal`.
-- Session key caching with automatic refresh and one retry on auth errors.
-- Phone / amount / reference validation, typed exceptions, `INS-*` code descriptions.
-- `MpesaClient.from_env()` (+ optional `.env` support).
-- Callback parsing + acknowledgement helpers.
-- Optional Django app `mpesa_tz.contrib.django` (Payment model, admin, callback view, services).
-- CLI: `python -m mpesa_tz` / `mpesa-tz`.
-- `client.stk.push(phone, amount, reference)` from 0.1.x still works.
-- Requires Python 3.10+ (3.8 and 3.9 are end-of-life).
-- Breaking: `MpesaClient(api_key, base_url)` now also needs `public_key` and `service_provider_code`.
+### Added
+
+- Connection to the real Vodacom Tanzania M-Pesa service, in both testing (sandbox) and live mode
+- Asking a customer to pay, which they confirm with their M-Pesa PIN on their phone
+- Sending money to a customer
+- Sending money to another business
+- Checking the status of a transaction
+- Reversing (refunding) a payment
+- Automatic handling of M-Pesa sign-in, so you don't have to manage it yourself
+- Checks on phone numbers, amounts and references before anything is sent
+- Clear, readable messages for every M-Pesa error
+- Setup from a simple settings file
+- Support for payment results that M-Pesa sends back to your website later
+- A ready-made Django add-on that saves payments and shows them in the admin panel
+- A command-line tool for quick checks
+- Examples for Flask, FastAPI and plain Python
+- A full set of automated tests
+- A quick start guide and a testing guide
+
+### Changed
+
+- Setup now needs your full M-Pesa account details, not just the API key
+- The package now needs Python 3.10 or newer
+
+### Fixed
+
+- The package can now be installed and used without errors
+- Django is no longer required unless you use the Django add-on
+
+## Version 0.1.0
+
+- First release
